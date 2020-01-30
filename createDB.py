@@ -1,4 +1,5 @@
 import sqlite3
+
 db_name = 'race.db'
 
 # SQL create table scripts
