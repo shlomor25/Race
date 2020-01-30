@@ -31,12 +31,12 @@ create_person = '''CREATE TABLE IF NOT EXISTS persons (
 
 create_device = '''CREATE TABLE IF NOT EXISTS devices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    external_id INTEGER NOT NULL,
+    external_id INTEGER UNIQUE NOT NULL,
     device_type INTEGER ,
     model TEXT (20),
     name TEXT (20) NOT NULL,
     description TEXT (200), 
-    SSID TEXT (20), --add table for many SSIDs
+    SSID TEXT (20),
     SSID_password TEXT (10),
     mac_id TEXT (20),
     vendor NUMERIC,
@@ -51,21 +51,31 @@ create_device = '''CREATE TABLE IF NOT EXISTS devices (
     language INTEGER,
     gender INTEGER ,
     age INTEGER ,
-    keywords INTEGER , --many?
+    keywords INTEGER ,
     with_gun NUMERIC ,
     key_logger NUMERIC ,
-    linked_devices INTEGER , --many
+    linked_devices INTEGER ,
     sensor_id INTEGER REFERENCES sensors(sensor_id),
-    person_id INTEGER REFERENCES persons(person_id),
+    person_id INTEGER REFERENCES persons(person_id)
     --FOREIGN KEY(sensor_id) REFERENCES sensors(sensor_id),
     --FOREIGN KEY(person_id) REFERENCES persons(person_id)
-    -- speaker_id
-    -- number of speakers?
     );'''
 
-create_device_linked_devices = """CREATE TABLE IF NOT EXIST device_linked_devices (
-    source_id INTEGER NOT NULL ,
-    target_id INTEGER NOT NULL ,
+create_ssids = """CREATE TABLE IF NOT EXISTS ssids (
+                device_id INTEGER,
+                ssid INTEGER ,
+                FOREIGN KEY (device_id) REFERENCES devices(device_id)
+                );"""
+
+create_device_keywords = """CREATE TABLE IF NOT EXISTS device_keywords (
+                device_id INTEGER,
+                keyword INTEGER ,
+                FOREIGN KEY (device_id) REFERENCES devices(device_id)
+                );"""
+
+create_device_linked_devices = """CREATE TABLE IF NOT EXISTS device_linked_devices (
+    source_id INTEGER NOT NULL,
+    target_id INTEGER NOT NULL,
     FOREIGN KEY (source_id) REFERENCES devices(source_id), 
     FOREIGN KEY (target_id) REFERENCES devices(target_id),
     UNIQUE (source_id, target_id)
@@ -81,13 +91,13 @@ create_file = '''CREATE TABLE IF NOT EXISTS files (
     file_path TEXT (50) NOT NULL,
     language INTEGER,
     gender INTEGER,
-    age INTEGER 
+    age INTEGER ,
     speaker_id INTEGER,
     number_of_speaker INTEGER,
     keywords INTEGER,
     with_gun NUMERIC ,
-    device_id INTEGER,
-    FOREIGN KEY(device_id) REFERENCES devices(device_id)
+    device_id INTEGER REFERENCES devices(device_id)
+    --FOREIGN KEY(device_id) REFERENCES devices(device_id)
     );'''
 
 create_cyber_insight = '''CREATE TABLE IF NOT EXISTS cyber_insights (
@@ -102,9 +112,9 @@ create_cyber_insight = '''CREATE TABLE IF NOT EXISTS cyber_insights (
     people NUMERIC,
     number_of_people NUMERIC,
     combat_vs_non TEXT (10),
-    activity NUMERIC,
-    device_id INTEGER, -- ?
-    FOREIGN KEY(device_id) REFERENCES devices(device_id)
+    activity NUMERIC
+    --device_id INTEGER, -- ?
+    --FOREIGN KEY(device_id) REFERENCES devices(device_id)
     );'''
 
 create_cyber_attack = '''CREATE TABLE IF NOT EXISTS cyber_attacks (
@@ -131,8 +141,25 @@ trigger = """CREATE TRIGGER if not exists {}
                 END;"""
 
 # tables
-tables = ["sensors", "persons", "devices", 'files', "cyber_insights", "cyber_attacks"]
-queries = [create_sensor, create_person, create_device, create_file, create_cyber_insight, create_cyber_attack]
+tables = ["sensors",
+          "persons",
+          "devices",
+          "ssids",
+          "device_keywords",
+          "device_linked_devices",
+          'files',
+          "cyber_insights",
+          "cyber_attacks"]
+
+queries = [create_sensor,
+           create_person,
+           create_device,
+           create_ssids,
+           create_device_keywords,
+           create_device_linked_devices,
+           create_file,
+           create_cyber_insight,
+           create_cyber_attack]
 triggers = [trigger.format('t_'+table, table) for table in tables]
 
 
