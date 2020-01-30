@@ -28,3 +28,5 @@ i tried this idea, but mongodb supports events engine only in replica-set versio
 and this is a problem in elbit.systems 
 
 we need this event engine to run horse race flow.
+
+please look at schema design and verify that its OK.
